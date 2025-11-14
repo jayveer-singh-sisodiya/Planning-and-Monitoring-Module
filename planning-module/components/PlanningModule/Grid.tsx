@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { weeksInMonths } from "@/components/Calender/calenderFunc";
@@ -46,6 +46,17 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
   >([]);
   const [updatedFields, setUpdatedFields] = useState<
     { UniqueKey: string | number | null; key: string; isUpdated: boolean }[]
+  >([]);
+
+  const [latestUpdates, setLatestUpdates] = useState<
+    {
+      UniqueKey: string | number | null;
+      key: string;
+      oldValue: string | number | null;
+      newValue: string | number | null;
+      baselineCount: number;
+      timestamp: string;
+    }[]
   >([]);
 
   // =================== FETCH DATA ===================
@@ -112,7 +123,8 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
     }
   }, [editablePeriods.startDate, editablePeriods.targetDate]);
 
-  // =================== HANDLE UPDATE ===================
+  // =================== HANDLE UPDATES ===================
+
   const handleUpdate = () => {
     if (updatedFields.length === 0) {
       console.log("No updates detected.");
@@ -131,22 +143,20 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
       const newValue = updatedRow[key];
       if (oldValue === newValue) return;
 
-      // Count how many times this field was updated before
       const prevUpdates = updateHistory.filter(
         (h) => h.UniqueKey === UniqueKey && h.key === key
       );
+
       const baselineCount = prevUpdates.length + 1;
 
-      // ✅ Stop after 4 updates
       if (baselineCount > 4) {
         console.warn(
           `⛔ Cannot update more than 4 times → UniqueKey: ${UniqueKey}, Field: ${key}`
         );
-
         return;
       }
 
-      // ✅ Always create a new snapshot entry
+      // push into list
       newHistoryEntries.push({
         UniqueKey,
         key,
@@ -157,26 +167,52 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
       });
     });
 
+    setLatestUpdates((prev) => {
+      const filtered = prev.filter(
+        (item) =>
+          !newHistoryEntries.some(
+            (h) => h.UniqueKey === item.UniqueKey && h.key === item.key
+          )
+      );
+
+      const updated = [...filtered, ...newHistoryEntries];
+      console.table(updated);
+      return updated;
+    });
+
     if (newHistoryEntries.length > 0) {
-      // Append new entries without mutating old ones
       setUpdateHistory((prev) => [...prev, ...newHistoryEntries]);
       console.table(newHistoryEntries);
     } else {
       console.log("No new changes found.");
     }
 
-    // ✅ Clear tracked fields after processing
     setUpdatedFields([]);
-    handelRemainingValues();
   };
 
+  const handelRemainingValues = useCallback(
+    (UniqueKey: string | number | null) => {
+      const updatedRow = planningData.find((r) => r.UniqueKey === UniqueKey);
+      const totalCount = updatedRow ? Number(updatedRow.Count) : 0;
 
-  // =================== Remaining Values ===================
-  const handelRemainingValues =() => {
+      const totalChanges = latestUpdates
+        .filter((h) => h.UniqueKey === UniqueKey)
+        .reduce((sum, h) => sum + Number(h.newValue || 0), 0);
 
-    
-    console.log("Remaining Values");
-  }
+      const remainingCount = totalCount - totalChanges;
+
+      console.log(
+        `Total Changes: ${totalChanges} for UniqueKey: ${UniqueKey}, totalCount: ${totalCount}, remainingCount: ${remainingCount}`
+      );
+    },
+    [planningData, latestUpdates]
+  );
+
+  useEffect(() => {
+    if (latestUpdates.length === 0) return;
+    const uniqueKeys = [...new Set(latestUpdates.map((u) => u.UniqueKey))];
+    uniqueKeys.forEach((key) => handelRemainingValues(key));
+  }, [latestUpdates, handelRemainingValues]);
 
   // =================== FILTERS ===================
   const handleChange = (
@@ -190,7 +226,7 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
       )
     );
   };
-  const recordUpdatedField = (
+   const recordUpdatedField = (
     uniqueKey: string | number | null,
     key: string
   ) => {
