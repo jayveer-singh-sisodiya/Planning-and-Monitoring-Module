@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Filter } from "./Filter";
-import { useMenuStore } from "../../store/toggel-menu";
+import { useMenuStore } from "../../../store/toggel-menu";
 import PlanningTable from "./Grid";
 
 type Filters = {
@@ -32,9 +32,9 @@ export default function Layout() {
   });
 
   return (
-    <div className="flex flex-col gap-4 p-4 ml-60 ">
+    <div className="flex flex-col gap-4 p-4">
       {/* Filters */}
-      <Filter filters={filters} setFilters={setFilters}  />
+      <Filter filters={filters} setFilters={setFilters} />
 
       {/* Table wrapper */}
       <div

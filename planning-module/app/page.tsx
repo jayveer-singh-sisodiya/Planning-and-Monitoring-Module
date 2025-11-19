@@ -1,4 +1,4 @@
-import Layout from "@/components/PlanningModule/Layout";
+import Layout from "@/app/Component/PlanningModule/Layout";
 
 export default function Home() {
   return (

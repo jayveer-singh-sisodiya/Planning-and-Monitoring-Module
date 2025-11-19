@@ -1,8 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
-import { useMenuStore } from "../../store/toggel-menu";
+import { useMenuStore } from "../../../store/toggel-menu";
 import { ChevronsLeft, ChevronsRight } from "lucide-react";
-
 
 export default function MenuToggel() {
   const { isOpen, ToggelMenu } = useMenuStore();

@@ -22,8 +22,8 @@ import { motion } from "framer-motion";
 
 const menuItems = [
   { label: "Planning", href: "/", icon: Home },
-  { label: "Dashboard", href: "/Dashboard", icon: LayoutDashboard },
-  { label: "Calendar", href: "/Calender", icon: Calendar },
+  { label: "Dashboard", href: "/Component/Dashboard", icon: LayoutDashboard },
+  { label: "Calendar", href: "/Component/Calender", icon: Calendar },
   { label: "Link", href: "/products", icon: Shirt },
   { label: "Link", href: "/team", icon: Component },
   { label: "Login", href: "/login", icon: LogIn },

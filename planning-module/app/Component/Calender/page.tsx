@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import {CalenderFunc} from "./calenderFunc";
+import { CalenderFunc } from "@/app/Component/Calender/calenderFunc";
 
 interface PlanningRecord {
   Year: string | number;
@@ -69,4 +69,3 @@ export default function Calender() {
 
   return <CalenderFunc startDate={start} targetDate={end} />;
 }
-

@@ -1,6 +1,6 @@
 "use client";
 
-import { Table } from "@/components/ui/table";
+import { Table } from "@/app/components/ui/table";
 
 export function DataTable({ children }: { children: React.ReactNode }) {
   return (

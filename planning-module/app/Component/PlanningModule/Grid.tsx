@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { weeksInMonths } from "@/components/Calender/calenderFunc";
+import { Button } from "@/app/Component/ui/button";
+import { Input } from "@/app/Component/ui/input";
+import { weeksInMonths } from "@/app/Component/Calender/calenderFunc";
 
 import {
   Table,
@@ -12,7 +12,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/app/Component/ui/table";
 
 type Period = "Month" | "Week" | "Quarter";
 
@@ -226,7 +226,7 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
       )
     );
   };
-   const recordUpdatedField = (
+  const recordUpdatedField = (
     uniqueKey: string | number | null,
     key: string
   ) => {
