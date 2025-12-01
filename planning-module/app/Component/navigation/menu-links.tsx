@@ -36,6 +36,7 @@ const MenuLinks = ({ isOpen }: { isOpen: boolean }) => {
     active: { backgroundColor: "#2463EB", color: "#fff", scale: 1.05 },
     inactive: {
       backgroundColor: "rgba(0, 0, 0, 0)",
+      color: "#fff",
       scale: 1,
     },
   };
@@ -46,7 +47,7 @@ const MenuLinks = ({ isOpen }: { isOpen: boolean }) => {
     <TooltipProvider>
       <ul
         className={`flex flex-col gap-10 ${
-          !isOpen ? " py-12 max-md:hidden gap-10" : "block py-15"
+          !isOpen ? " py-35 max-md:hidden gap-10" : "block py-12"
         } `}
       >
         {menuItems.map(({ href, label, icon: Icon }) => {

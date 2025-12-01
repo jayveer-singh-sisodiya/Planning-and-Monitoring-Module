@@ -148,7 +148,8 @@ export const CalenderFunc: React.FC<CalendarFuncProps> = ({
     </div>
   );
 };
-export function weeksInMonths({
+
+export function editableWeeksInMonths({
   startDate,
   targetDate,
 }: CalendarFuncProps): string[] {
@@ -229,4 +230,111 @@ export function weeksInMonths({
   const uniqueWeekNames = Array.from(new Set(weekNames));
 
   return uniqueWeekNames;
+}
+export function getWeeksForMonth(year: number, month: number) {
+  const yearStart = new Date(year, 0, 1);
+  const yearEnd = new Date(year, 11, 31);
+
+  // Find first Monday before/at Jan 1
+  const firstMonday = new Date(yearStart);
+  firstMonday.setDate(firstMonday.getDate() - ((firstMonday.getDay() + 6) % 7));
+
+  // Find last Saturday after/at Dec 31
+  const lastSaturday = new Date(yearEnd);
+  lastSaturday.setDate(
+    lastSaturday.getDate() + ((6 - lastSaturday.getDay() + 7) % 7)
+  );
+
+  // all working days (Mon-Sat)
+  const workingDays: Date[] = [];
+  for (
+    let d = new Date(firstMonday);
+    d <= lastSaturday;
+    d.setDate(d.getDate() + 1)
+  ) {
+    if (d.getDay() !== 0) workingDays.push(new Date(d));
+  }
+
+  // build weeks
+  const weekRecords: {
+    year: number;
+    week: number;
+    startDate: string;
+    endDate: string;
+  }[] = [];
+  const weekTracker: Record<number, number> = {};
+
+  for (let i = 0; i < workingDays.length; i += 6) {
+    const weekDays = workingDays.slice(i, i + 7);
+    if (!weekDays.length) continue;
+
+    const wStart = weekDays[0];
+    const wEnd = weekDays[weekDays.length - 1];
+
+    const weekYear = new Date(wStart.getTime() + 3 * 86400000).getFullYear();
+    const currentWeekCount = weekTracker[weekYear] || 0;
+    const newWeekCount = currentWeekCount + 1;
+    weekTracker[weekYear] = newWeekCount;
+
+    weekRecords.push({
+      year: weekYear,
+      week: newWeekCount,
+      startDate: wStart.toISOString().split("T")[0],
+      endDate: wEnd.toISOString().split("T")[0],
+    });
+  }
+
+  // month bounds
+  const monthStart = new Date(year, month - 1, 1);
+  const monthEnd = new Date(year, month, 0);
+
+  // count Mon–Sat
+  function countWorkingDaysInRange(a: Date, b: Date) {
+    const start = new Date(a.getFullYear(), a.getMonth(), a.getDate());
+    const end = new Date(b.getFullYear(), b.getMonth(), b.getDate());
+    let count = 0;
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      if (d.getDay() !== 0) count++;
+    }
+    return count;
+  }
+
+  let totalDaysInMonth = 0;
+
+  // build rows
+  const weeks = weekRecords
+    .filter((w) => {
+      const wStart = new Date(w.startDate);
+      const wEnd = new Date(w.endDate);
+      return wEnd >= monthStart && wStart <= monthEnd;
+    })
+    .map((w) => {
+      const wStart = new Date(w.startDate);
+      const wEnd = new Date(w.endDate);
+
+      const overlapStart = wStart < monthStart ? monthStart : wStart;
+      const overlapEnd = wEnd > monthEnd ? monthEnd : wEnd;
+
+      const daysCount =
+        overlapEnd >= overlapStart
+          ? countWorkingDaysInRange(overlapStart, overlapEnd)
+          : 0;
+
+      totalDaysInMonth += daysCount;
+
+      return {
+        weekName: `Week${w.week}`,
+        year: w.year,
+        startDate: w.startDate,
+        endDate: w.endDate,
+        daysCount,
+        isPartial: daysCount < 6 ? true : false,
+      };
+    })
+    .filter((w) => w.daysCount !== 0);
+
+  return weeks.map((w) => ({
+    ...w,
+    totalDaysInMonth,
+  }));
 }

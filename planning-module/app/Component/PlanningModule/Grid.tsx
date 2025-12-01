@@ -3,7 +3,10 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Button } from "@/app/Component/ui/button";
 import { Input } from "@/app/Component/ui/input";
-import { weeksInMonths } from "@/app/Component/Calender/calenderFunc";
+import {
+  editableWeeksInMonths,
+  getWeeksForMonth,
+} from "@/app/Component/Calender/calenderFunc";
 
 import {
   Table,
@@ -115,7 +118,7 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
   // =================== CALCULATE WEEKS ===================
   useEffect(() => {
     if (editablePeriods.startDate && editablePeriods.targetDate) {
-      const weekList = weeksInMonths({
+      const weekList = editableWeeksInMonths({
         startDate: editablePeriods.startDate,
         targetDate: editablePeriods.targetDate,
       });
@@ -136,6 +139,7 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
     updatedFields.forEach(({ UniqueKey, key }) => {
       const updatedRow = planningData.find((r) => r.UniqueKey === UniqueKey);
       const originalRow = originalData.find((r) => r.UniqueKey === UniqueKey);
+      const year = originalRow ? Number(originalRow.Year) : 1999;
 
       if (!updatedRow || !originalRow) return;
 
@@ -151,7 +155,7 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
 
       if (baselineCount > 4) {
         console.warn(
-          `⛔ Cannot update more than 4 times → UniqueKey: ${UniqueKey}, Field: ${key}`
+          `⛔ Cannot update more than 4 times → UniqueKey: ${UniqueKey}, Field: ${key} `
         );
         return;
       }
@@ -165,6 +169,12 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
         baselineCount,
         timestamp: new Date().toLocaleString(),
       });
+
+      handelMonthtoWeeks(Number(newValue), UniqueKey, key, year);
+
+      console.log(
+        `✅ Updated → UniqueKey: ${UniqueKey}, Field: ${key}, From: ${oldValue} To: ${newValue} year: ${year} `
+      );
     });
 
     setLatestUpdates((prev) => {
@@ -198,15 +208,90 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
       const totalChanges = latestUpdates
         .filter((h) => h.UniqueKey === UniqueKey)
         .reduce((sum, h) => sum + Number(h.newValue || 0), 0);
-
       const remainingCount = totalCount - totalChanges;
-
       console.log(
         `Total Changes: ${totalChanges} for UniqueKey: ${UniqueKey}, totalCount: ${totalCount}, remainingCount: ${remainingCount}`
       );
     },
     [planningData, latestUpdates]
   );
+
+  const handelMonthtoWeeks = (
+    changeValue: number,
+    uniqueKey: number | string | null,
+    changeField: string,
+    yearNumber: number
+  ) => {
+    const monthNumber = parseInt(changeField.replace("Month", ""));
+    const weeksInThatMonth = getWeeksForMonth(yearNumber, monthNumber);
+
+    const weekField = weeksInThatMonth.map((w) => ({
+      weekName: w.weekName,
+      year: w.year,
+      daysCount: w.daysCount,
+      perDayValue: Math.round(changeValue / w.totalDaysInMonth),
+      weeksValue: Math.round((w.daysCount * changeValue) / w.totalDaysInMonth),
+      isPartial: w.isPartial,
+    }));
+
+    console.log("Weeks in that month:", weekField);
+
+    const SNO = Number((uniqueKey as string).split("-")[1]);
+
+    console.log(SNO, uniqueKey);
+
+    const matchedRow: PlanningRecord[] = planningData.filter(
+      (row) => row.SNO === SNO
+    );
+
+    const oldValue = weekField.map((w) => {
+      // Find the row from matchedRow[] for the same year
+      const recordForYear = matchedRow.find((m) => Number(m.Year) === w.year);
+
+      // Extract the old value (from that row)
+      const value = recordForYear ? Number(recordForYear[w.weekName] ?? 0) : 0;
+
+      return {
+        weekName: w.weekName,
+        year: w.year,
+        oldValue: value,
+        isPartial: w.isPartial,
+      };
+    });
+
+    console.log("Old Values before week update:", oldValue);
+    setPlanningData((prev) =>
+      prev.map((row) => {
+        if (row.SNO !== SNO) return row;
+        const updatedRow = { ...row };
+        const origData: PlanningRecord[] = originalData.filter(
+          (o) => o.SNO === SNO
+        );
+
+        weekField.forEach((w) => {
+          const matched = origData.find((d) => Number(d.Year) === w.year);
+          const oldData = (matched ? matched[w.weekName] : 0) as number;
+          const oldV =
+            (oldValue.find((ov) => ov.weekName === w.weekName)
+              ?.oldValue as number) || 0;
+
+          if (w.isPartial && w.year === row.Year) {
+            if (oldData === oldV) {
+              updatedRow[w.weekName] =
+                w.weeksValue + Math.round(oldV / 6) * (6 - w.daysCount);
+            } else {
+              updatedRow[w.weekName] =
+                w.weeksValue +
+                Math.round(oldV - (oldData / 6) * (6 - w.daysCount));
+            }
+          } else if (!w.isPartial && uniqueKey === row.UniqueKey) {
+            updatedRow[w.weekName] = w.weeksValue;
+          }
+        });
+        return updatedRow;
+      })
+    );
+  };
 
   useEffect(() => {
     if (latestUpdates.length === 0) return;
@@ -231,7 +316,6 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
     key: string
   ) => {
     setUpdatedFields((prev) => {
-      // avoid duplicates
       const alreadyExists = prev.some(
         (f) => f.UniqueKey === uniqueKey && f.key === key
       );
@@ -423,7 +507,7 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
                       return (
                         <TableCell
                           key={key}
-                          className="border text-center hover:bg-gray-900"
+                          className="border text-center hover:bg-gray-300 dark:hover:bg-gray-900"
                         >
                           {isEditable ? (
                             <input
@@ -438,6 +522,14 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
                                   key,
                                   e.target.value
                                 );
+
+                                // handelMonthtoWeeks(
+                                //   Number(e.target.value),
+                                //   row.UniqueKey,
+                                //   key,
+                                //   Number(row.Year)
+                                // );
+
                                 recordUpdatedField(row.UniqueKey, key);
                               }}
                             />
@@ -566,6 +658,8 @@ interface PlanningRecord {
   StartDate: string;
   TargetDate: string;
   UniqueKey: string | number | null;
+
+  // Allow dynamic week/month fields
   [key: string]: string | number | null;
 }
 
