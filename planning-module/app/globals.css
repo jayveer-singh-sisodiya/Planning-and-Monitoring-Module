@@ -38,6 +38,7 @@
   --foreground: oklch(0.145 0 0);
   --fontColor: oklch(36.768% 0.00004 271.152);
   --editColor: oklch(32.585% 0.14384 262.087);
+  --backgroundColor: rgb(230, 101, 122);
 }
 
 .dark {
@@ -74,7 +75,7 @@
   --sidebar-ring: oklch(0.556 0 0);
   --myColor: oklch(78.738% 0.00223 14.998);
   --editColor: oklch(52.564% 0.21943 262.293);
-
+  --backgroundColor: rgb(36, 99, 235);
 }
 
 @theme inline {

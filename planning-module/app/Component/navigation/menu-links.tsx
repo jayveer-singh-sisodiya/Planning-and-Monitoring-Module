@@ -47,7 +47,7 @@ const MenuLinks = ({ isOpen }: { isOpen: boolean }) => {
     <TooltipProvider>
       <ul
         className={`flex flex-col gap-10 ${
-          !isOpen ? " py-35 max-md:hidden gap-10" : "block py-12"
+          !isOpen ? " py-35 max-md:hidden gap-10 " : "block py-12"
         } `}
       >
         {menuItems.map(({ href, label, icon: Icon }) => {
@@ -57,15 +57,15 @@ const MenuLinks = ({ isOpen }: { isOpen: boolean }) => {
           return (
             <li key={href}>
               {isOpen ? (
-                <Link href={href}>
+                <Link href={href} >
                   <motion.div
-                    className="flex gap-4 items-center py-1  rounded-md px-4"
+                    className="flex gap-4 items-center py-1 rounded-md px-4 "
                     animate={isActive ? "active" : "inactive"}
                     transition={{ duration: 0.3 }}
                     variants={linkVariants}
                   >
-                    <Icon size={23} className="md-1" />
-                    <span className="max-md:hidden">{label}</span>
+                    <Icon size={23} className="md-1 text-primary" />
+                    <span className="max-md:hidden text-primary">{label}</span>
                   </motion.div>
                 </Link>
               ) : (
@@ -73,12 +73,12 @@ const MenuLinks = ({ isOpen }: { isOpen: boolean }) => {
                   <TooltipTrigger asChild>
                     <Link href={href}>
                       <motion.div
-                        className="flex gap-4 items-center py-1 rounded-md px-4"
+                        className="flex gap-4 items-center py-1 rounded-md px-4 "
                         animate={isActive ? "active" : "inactive"}
                         transition={{ duration: 0.3 }}
                         variants={linkVariants}
                       >
-                        <Icon size={23} className="md-1" />
+                        <Icon size={23} className="md-1 text-primary" />
                       </motion.div>
                     </Link>
                   </TooltipTrigger>
