@@ -1,3 +1,9 @@
+import LoadingBar from '../navigation/loading';
+
 export default function Dashboard() {
-  return <div>Hello</div>;
+  return <>
+  <LoadingBar/>
+  <br />
+  <div>hello</div>
+  </>;
 }

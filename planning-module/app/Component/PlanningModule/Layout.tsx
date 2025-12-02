@@ -32,17 +32,19 @@ export default function Layout() {
   });
 
   return (
-    <div className="flex flex-col gap-4 p-4">
-      {/* Filters */}
-      <Filter filters={filters} setFilters={setFilters} />
+    <>
+      <div className="flex flex-col gap-4 p-4">
+        {/* Filters */}
+        <Filter filters={filters} setFilters={setFilters} />
 
-      {/* Table wrapper */}
-      <div
-        style={{ width: isOpen ? "93vw" : "85vw" }}
-        className="border rounded transition-all duration-300 "
-      >
-        <PlanningTable filters={filters} />
+        {/* Table wrapper */}
+        <div
+          style={{ width: isOpen ? "93vw" : "85vw" }}
+          className="border rounded transition-all duration-300 "
+        >
+          <PlanningTable filters={filters} />
+        </div>
       </div>
-    </div>
+    </>
   );
 }

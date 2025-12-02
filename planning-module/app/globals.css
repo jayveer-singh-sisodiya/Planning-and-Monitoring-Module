@@ -38,7 +38,7 @@
   --foreground: oklch(0.145 0 0);
   --fontColor: oklch(36.768% 0.00004 271.152);
   --editColor: oklch(32.585% 0.14384 262.087);
-  --backgroundColor: rgb(230, 101, 122);
+  --backgroundColor: rgb(101, 142, 230);
 }
 
 .dark {

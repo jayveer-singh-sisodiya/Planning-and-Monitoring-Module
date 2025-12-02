@@ -8,6 +8,8 @@ import {
   getWeeksForMonth,
 } from "@/app/Component/Calender/calenderFunc";
 
+import LoadingBar from "@/app/Component/navigation/loading";
+
 import {
   Table,
   TableBody,
@@ -26,6 +28,7 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
   const [planningData, setPlanningData] = useState<PlanningRecord[]>([]);
   const [originalData, setOriginalData] = useState<PlanningRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [changeLoading, setChangeLoading] = useState(false);
   const [view, setView] = useState<Period>("Month");
   const [filterText, setFilterText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -238,7 +241,6 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
         isPartial: w.isPartial,
       }));
 
-
       const SNO = Number((uniqueKey as string).split("-")[1]);
       const matchedRow: PlanningRecord[] = planningData.filter(
         (row) => row.SNO === SNO
@@ -257,7 +259,6 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
           isPartial: w.isPartial,
         };
       });
-
 
       setPlanningData((prev) =>
         prev.map((row) => {
@@ -304,6 +305,7 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
         changeField: string,
         yearNumber: number
       ) => {
+        setChangeLoading(false);
         handelMonthtoWeeks(changeValue, uniqueKey, changeField, yearNumber);
       },
       5000
@@ -399,7 +401,12 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
   );
 
   if (loading) {
-    return <p className="text-center text-gray-500">Loading data...</p>;
+    return (
+      <>
+        <LoadingBar />
+        <p className="text-center text-gray-500">Loading data...</p>
+      </>
+    );
   }
 
   // =================== RENDER ===================
@@ -426,6 +433,13 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
             >
               ✕
             </button>
+          )}
+        </div>
+        <div>
+          {changeLoading && (
+            <>
+              <LoadingBar />
+            </>
           )}
         </div>
 
@@ -546,7 +560,7 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
                                   key,
                                   Number(row.Year)
                                 );
-
+                                setChangeLoading(true);
                                 recordUpdatedField(row.UniqueKey, key);
                               }}
                             />
