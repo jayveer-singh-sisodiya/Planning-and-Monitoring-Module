@@ -5,6 +5,7 @@ import { Button } from "@/app/Component/ui/button";
 import { Input } from "@/app/Component/ui/input";
 import {
   editableWeeksInMonths,
+  getMonthofthatWeek,
   getWeeksForMonth,
 } from "@/app/Component/Calender/calenderFunc";
 
@@ -20,6 +21,7 @@ import {
 } from "@/app/Component/ui/table";
 
 import debounce from "lodash.debounce";
+import { start } from "repl";
 
 type Period = "Month" | "Week" | "Quarter";
 
@@ -219,6 +221,34 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
     },
     [planningData, latestUpdates]
   );
+  const handleWeekstoMonth = (
+    changeValue: number,
+    uniqueKey: number | string | null,
+    changeField: string,
+    yearNumber: number
+  ) => {
+    const weekNumber = parseInt(changeField.replace("Week", ""));
+    const monthofThatWeek = getMonthofthatWeek(yearNumber, weekNumber);
+
+  // const monthField = monthofThatWeek.map((m) => ({
+  //       week: m.week,
+  //       year: m.year,
+  //       startDate: m.startDate,
+  //       endDate: m.endDate,
+  //       startMonth: m.startMonth,
+  //       endMonth: m.endMonth,
+  //       startMonthDays: m.startMonthDays,
+  //       daysCount: m.daysCount,
+  //       perDayValue: Math.round(changeValue / m.totalDaysInMonth),
+  //       weeksValue: Math.round(
+  //         (m.daysCount * changeValue) / m.totalDaysInMonth
+  //       ),
+  //       isPartial: m.isPartial,
+  //     }));
+
+
+    console.log("Month of that week:", monthofThatWeek);
+  };
 
   const handelMonthtoWeeks = useCallback(
     (
@@ -306,7 +336,11 @@ export default function PlanningTable({ filters }: { filters: Filters }) {
         yearNumber: number
       ) => {
         setChangeLoading(false);
-        handelMonthtoWeeks(changeValue, uniqueKey, changeField, yearNumber);
+        if (changeField.startsWith("Month")) {
+          handelMonthtoWeeks(changeValue, uniqueKey, changeField, yearNumber);
+        } else {
+          handleWeekstoMonth(changeValue, uniqueKey, changeField, yearNumber);
+        }
       },
       5000
     );
@@ -699,3 +733,5 @@ interface EditablePeriods {
   startDate: string;
   targetDate: string;
 }
+
+

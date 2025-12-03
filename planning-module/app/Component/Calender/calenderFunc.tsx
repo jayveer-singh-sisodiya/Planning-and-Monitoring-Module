@@ -231,6 +231,7 @@ export function editableWeeksInMonths({
 
   return uniqueWeekNames;
 }
+
 export function getWeeksForMonth(year: number, month: number) {
   const yearStart = new Date(year, 0, 1);
   const yearEnd = new Date(year, 11, 31);
@@ -337,4 +338,56 @@ export function getWeeksForMonth(year: number, month: number) {
     ...w,
     totalDaysInMonth,
   }));
+}
+export function getMonthofthatWeek(year: number, week: number) {
+  // Helper: Get Monday of ISO week
+  function getMondayOfISOWeek(week: number, year: number) {
+    const simple = new Date(year, 0, 1 + (week - 1) * 7);
+    const day = simple.getDay();
+    const diff = simple.getDate() - day + (day === 0 ? -6 : 1);
+    return new Date(simple.setDate(diff));
+  }
+
+  // Get Monday
+  const monday = getMondayOfISOWeek(week, year);
+
+  // Build full week Mon–Sun (we will ignore Sunday count)
+  const weekDays: Date[] = [];
+  for (let i = 0; i < 7; i++) {
+    weekDays.push(new Date(monday.getTime() + i * 86400000));
+  }
+
+  // Week boundaries (Mon–Sat)
+  const startDate = weekDays[0]; // Monday
+  const endDate = weekDays[5]; // Saturday
+
+  const startMonth = startDate.getMonth() + 1;
+  const endMonth = endDate.getMonth() + 1;
+
+  // Count working days (Mon–Sat) in each month
+  let startMonthDays = 0;
+  let endMonthDays = 0;
+
+  for (let i = 0; i < 6; i++) {
+    // Only Mon–Sat
+    const d = weekDays[i];
+    const month = d.getMonth() + 1;
+
+    if (month === startMonth) startMonthDays++;
+    else if (month === endMonth) endMonthDays++;
+  }
+
+  const isPartial = startMonth !== endMonth;
+
+  return {
+    year,
+    week,
+    startDate: startDate.toISOString().split("T")[0],
+    endDate: endDate.toISOString().split("T")[0],
+    startMonth,
+    endMonth,
+    startMonthDays,
+    endMonthDays,
+    isPartial,
+  };
 }
